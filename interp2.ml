@@ -10,34 +10,34 @@ and exp = Id of id
         | Times of exp * exp
         | Div of exp * exp
         | StmtExp of stmt * exp
-       
+
 exception No_such_symbol
 
 let e0 = fun _ -> raise No_such_symbol
-let update var vl env = fun v -> if v = var then vl else env v
+let update (var, vl, env) = fun v -> if v = var then (vl, env) else (env v, env)
 
-let rec trans_stmt ast env =
+let rec trans_stmt (ast, env) =
     match ast with
-          Stmts (s1, s2) -> let env' = trans_stmt s1 env in trans_stmt s2 env'
-        | Assign (var, e) -> (* let env' =  *)update var (trans_exp e env) env (* in env' *) (* let vl = trans_exp e env in let env = update var vl env in env *)
-        | Print e -> let vl = trans_exp e env in (print_int vl; print_string "\n"; env) 
-and trans_exp ast env =
+          Stmts (s1, s2) -> let env' = trans_stmt (s1, env) in trans_stmt (s2, env')
+        | Assign (var, e) -> let (vl, env') = trans_exp (e, env) in update (var, vl, env')
+        | Print e -> let (vl, env') = trans_exp (e, env) in (print_int vl; print_string "\n";  env)
+and trans_exp (ast, env) =
     match ast with
-          Id v -> env v
-        | Num n -> n
-        | Plus (e1, e2) -> let vl1 = trans_exp e1 env in
-                                let vl2 = trans_exp e2 env in
-                                    vl1 + vl2
-        | Minus (e1, e2) -> let vl1 = trans_exp e1 env in
-                                let vl2 = trans_exp e2 env in
-                                    vl1 - vl2
-        | Times (e1, e2) -> let vl1 = trans_exp e1 env in
-                                let vl2 = trans_exp e2 env in
-                                    vl1 * vl2
-        | Div (e1, e2) -> let vl1 = trans_exp e1 env in
-                                let vl2 = trans_exp e2 env in
-                                    vl1 / vl2
-        | StmtExp (s, e) -> let env' = trans_stmt s env in trans_exp e env'
+          Id v -> (env v, env)
+        | Num n -> (n, env)
+        | Plus (e1, e2) -> let (vl1, env') = trans_exp (e1, env) in
+                                let (vl2, env'') = trans_exp (e2, env') in
+                                    (vl1 + vl2, env'')
+        | Minus (e1, e2) -> let (vl1, env') = trans_exp (e1, env) in
+                                let (vl2, env'') = trans_exp (e2, env') in
+                                    (vl1 - vl2, env'')
+        | Times (e1, e2) -> let (vl1, env') = trans_exp (e1, env) in
+                                let (vl2, env'') = trans_exp (e2, env') in
+                                    (vl1 * vl2, env'')
+        | Div (e1, e2) -> let (vl1, env') = trans_exp (e1, env) in
+                                let (vl2, env'') = trans_exp (e2 ,env') in
+                                    (vl1 / vl2, env'')
+        | StmtExp (s, e) -> let env' = trans_stmt (s, env) in trans_exp (e, env')
 
 let prog = Stmts (Assign ("x", Plus (Num 2, Times (Num 2, Num 3))), Stmts (Assign ("y", Div (Id "x", Num 4)), Print (Id "y")))
 
