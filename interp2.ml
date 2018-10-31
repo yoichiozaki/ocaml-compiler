@@ -14,7 +14,7 @@ and exp = Id of id
 exception No_such_symbol
 
 let e0 = fun _ -> raise No_such_symbol
-let update (var, vl, env) = fun v -> if v = var then (vl, env) else (env v, env)
+let update (var, vl, env) = fun v -> if v = var then vl else env v
 
 let rec trans_stmt (ast, env) =
     match ast with
@@ -45,4 +45,4 @@ let prog1 = Stmts (Assign ("y", StmtExp (Assign ("x", Plus (Num 1, Num 2)), Id "
 
 let prog2 = Stmts (Assign ("y", StmtExp (Assign ("x", Plus (Num 1, Num 2)), Id "x")), Print (Id "x"))
 
-let interp ast = trans_stmt ast e0
+let interp ast = trans_stmt (ast, e0)
