@@ -42,4 +42,8 @@ and trans_exp ast env =
 let prog = Stmts (Assign ("x", Plus (Num 1, Times (Num 2, Num 3))),
             Stmts (Assign ("y", Div (Id "x", Num 4)), Print (Id "y")))
 
+let prog1 = Stmts (Assign ("y", StmtExp (Assign ("x", Plus (Num 1, Num 2)), Id "x")), Print (Id "y"))
+
+let prog2 = Stmts (Assign ("y", StmtExp (Assign ("x", Plus (Num 1, Num 2)), Id "x")), Print( Id "x"))
+
 let interp ast = trans_stmt ast e0
